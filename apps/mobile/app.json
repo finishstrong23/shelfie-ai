@@ -1,0 +1,35 @@
+{
+  "expo": {
+    "name": "Shelfie AI",
+    "slug": "shelfie-ai",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "icon": "./assets/icon.png",
+    "userInterfaceStyle": "light",
+    "scheme": "shelfie",
+    "splash": {
+      "backgroundColor": "#10B981"
+    },
+    "ios": {
+      "supportsTablet": false,
+      "bundleIdentifier": "com.shelfie.ai",
+      "infoPlist": {
+        "NSCameraUsageDescription": "Shelfie AI needs camera access to scan your food items",
+        "NSPhotoLibraryUsageDescription": "Shelfie AI needs photo library access to import food photos"
+      }
+    },
+    "android": {
+      "adaptiveIcon": {
+        "backgroundColor": "#10B981"
+      },
+      "package": "com.shelfie.ai",
+      "permissions": ["CAMERA"]
+    },
+    "plugins": [
+      "expo-router",
+      "expo-camera",
+      "expo-image-picker",
+      "expo-secure-store"
+    ]
+  }
+}

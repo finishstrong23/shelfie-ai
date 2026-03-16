@@ -1,0 +1,140 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id            String    @id @default(cuid())
+  email         String    @unique
+  passwordHash  String
+  name          String?
+  locationCity  String?
+  locationState String?
+  dietaryPrefs  String[]  @default([])
+  planTier      PlanTier  @default(FREE)
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+
+  inventoryItems InventoryItem[]
+  scans          Scan[]
+  mealLogs       MealLog[]
+  refreshTokens  RefreshToken[]
+
+  @@map("users")
+}
+
+model RefreshToken {
+  id        String   @id @default(cuid())
+  token     String   @unique
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  expiresAt DateTime
+  createdAt DateTime @default(now())
+
+  @@map("refresh_tokens")
+}
+
+model InventoryItem {
+  id         String          @id @default(cuid())
+  userId     String
+  user       User            @relation(fields: [userId], references: [id], onDelete: Cascade)
+  name       String
+  brand      String?
+  category   FoodCategory
+  location   StorageLocation
+  quantity   Float           @default(1)
+  unit       String?
+  addedAt    DateTime        @default(now())
+  expiresAt  DateTime?
+  consumedAt DateTime?
+  wasted     Boolean         @default(false)
+  scanId     String?
+  scan       Scan?           @relation(fields: [scanId], references: [id])
+  updatedAt  DateTime        @updatedAt
+
+  @@index([userId, location])
+  @@index([userId, expiresAt])
+  @@map("inventory_items")
+}
+
+model Scan {
+  id        String         @id @default(cuid())
+  userId    String
+  user      User           @relation(fields: [userId], references: [id], onDelete: Cascade)
+  location  StorageLocation
+  itemCount Int            @default(0)
+  status    ScanStatus     @default(PROCESSING)
+  createdAt DateTime       @default(now())
+
+  items          ScanItem[]
+  inventoryItems InventoryItem[]
+
+  @@map("scans")
+}
+
+model ScanItem {
+  id              String       @id @default(cuid())
+  scanId          String
+  scan            Scan         @relation(fields: [scanId], references: [id], onDelete: Cascade)
+  itemName        String
+  brand           String?
+  category        FoodCategory
+  quantity        Float        @default(1)
+  unit            String?
+  confidenceScore Float        @default(0.8)
+  expiresInDays   Int?
+
+  @@map("scan_items")
+}
+
+model MealLog {
+  id         String   @id @default(cuid())
+  userId     String
+  user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  title      String
+  cuisine    String?
+  cookTime   Int?
+  recipe     Json
+  rating     Int?
+  cookedAt   DateTime @default(now())
+
+  @@map("meal_logs")
+}
+
+enum PlanTier {
+  FREE
+  PRO
+  FAMILY
+}
+
+enum StorageLocation {
+  FRIDGE
+  FREEZER
+  PANTRY
+}
+
+enum FoodCategory {
+  PRODUCE
+  DAIRY
+  MEAT
+  SEAFOOD
+  FROZEN
+  GRAINS
+  CANNED
+  CONDIMENTS
+  SNACKS
+  BEVERAGES
+  BAKING
+  SPICES
+  OTHER
+}
+
+enum ScanStatus {
+  PROCESSING
+  COMPLETED
+  FAILED
+}

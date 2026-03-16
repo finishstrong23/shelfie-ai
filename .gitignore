@@ -1,0 +1,10 @@
+node_modules/
+dist/
+.env
+.env.local
+uploads/
+*.tsbuildinfo
+.turbo/
+.expo/
+ios/
+android/
