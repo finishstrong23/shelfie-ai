@@ -3,11 +3,10 @@ import { View, Text, FlatList } from 'react-native';
 import { router } from 'expo-router';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import Button from '../../components/ui/Button';
-import LoadingSpinner from '../../components/ui/LoadingSpinner';
+import { MealCardSkeleton } from '../../components/ui/Skeleton';
 import MealCard from '../../components/meals/MealCard';
 import MealFilters from '../../components/meals/MealFilters';
 import { useMealSuggestions } from '../../hooks/useMeals';
-import { useScanStore } from '../../stores/scanStore';
 
 export default function MealsScreen() {
   const [cuisine, setCuisine] = useState<string | undefined>();
@@ -53,7 +52,13 @@ export default function MealsScreen() {
         />
       </View>
 
-      {isLoading && <LoadingSpinner message="Cooking up ideas..." />}
+      {isLoading && (
+        <View className="px-4">
+          <MealCardSkeleton />
+          <MealCardSkeleton />
+          <MealCardSkeleton />
+        </View>
+      )}
 
       {isError && (
         <View className="items-center p-8">

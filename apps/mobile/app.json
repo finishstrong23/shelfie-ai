@@ -7,7 +7,10 @@
     "icon": "./assets/icon.png",
     "userInterfaceStyle": "light",
     "scheme": "shelfie",
+    "newArchEnabled": false,
     "splash": {
+      "image": "./assets/splash.png",
+      "resizeMode": "cover",
       "backgroundColor": "#10B981"
     },
     "ios": {
@@ -20,15 +23,30 @@
     },
     "android": {
       "adaptiveIcon": {
+        "foregroundImage": "./assets/adaptive-icon.png",
         "backgroundColor": "#10B981"
       },
       "package": "com.shelfie.ai",
       "permissions": ["CAMERA"]
     },
+    "web": {
+      "favicon": "./assets/favicon.png",
+      "bundler": "metro"
+    },
     "plugins": [
       "expo-router",
-      "expo-camera",
-      "expo-image-picker",
+      [
+        "expo-camera",
+        {
+          "cameraPermission": "Shelfie AI needs camera access to scan your food items."
+        }
+      ],
+      [
+        "expo-image-picker",
+        {
+          "photosPermission": "Shelfie AI needs photo library access to import food photos."
+        }
+      ],
       "expo-secure-store"
     ]
   }

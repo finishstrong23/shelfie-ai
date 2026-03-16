@@ -3,15 +3,17 @@ import { View, Text, FlatList, Alert } from 'react-native';
 import { router } from 'expo-router';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import ScanResultCard from '../components/scan/ScanResultCard';
-import LoadingSpinner from '../components/ui/LoadingSpinner';
+import ScanningAnimation from '../components/ui/ScanningAnimation';
 import Button from '../components/ui/Button';
 import { useScanStatus, useConfirmScan } from '../hooks/useScan';
 import { useScanStore } from '../stores/scanStore';
+import { useToast } from '../components/ui/Toast';
 
 export default function ScanResultsScreen() {
   const { scanId, items, setItems, updateItem, toggleItem, setProcessing } = useScanStore();
   const { data: scanResult, isLoading } = useScanStatus(scanId);
   const confirmScan = useConfirmScan();
+  const toast = useToast();
 
   useEffect(() => {
     if (scanResult?.status === 'COMPLETED' && scanResult.items.length > 0) {
@@ -40,16 +42,17 @@ export default function ScanResultsScreen() {
           accepted: item.accepted,
         })),
       });
+      toast.show(`${acceptedCount} items added to inventory!`, 'success');
       router.replace('/(tabs)/inventory');
     } catch {
-      Alert.alert('Error', 'Could not save items. Please try again.');
+      toast.show('Could not save items. Please try again.', 'error');
     }
   };
 
   if (isLoading || scanResult?.status === 'PROCESSING') {
     return (
       <SafeAreaView className="flex-1 bg-gray-50">
-        <LoadingSpinner message="AI is scanning your food..." />
+        <ScanningAnimation />
       </SafeAreaView>
     );
   }

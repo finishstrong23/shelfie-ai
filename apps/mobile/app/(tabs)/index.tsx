@@ -5,6 +5,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import Card from '../../components/ui/Card';
 import ExpirationBadge from '../../components/inventory/ExpirationBadge';
+import { DashboardSkeleton } from '../../components/ui/Skeleton';
 import { useInventory } from '../../hooks/useInventory';
 import { useAuthStore } from '../../stores/authStore';
 
@@ -36,8 +37,11 @@ export default function HomeScreen() {
           <Text className="text-sm text-gray-500 mt-0.5">{today}</Text>
         </View>
 
+        {/* Skeleton Loading State */}
+        {isLoading && <DashboardSkeleton />}
+
         {/* Quick Stats */}
-        <View className="flex-row px-4 py-3 gap-3">
+        {!isLoading && <View className="flex-row px-4 py-3 gap-3">
           {[
             { label: 'Fridge', count: counts.fridge, icon: 'snow', color: '#3B82F6' },
             { label: 'Freezer', count: counts.freezer, icon: 'cube', color: '#8B5CF6' },
@@ -55,7 +59,7 @@ export default function HomeScreen() {
               </Card>
             </TouchableOpacity>
           ))}
-        </View>
+        </View>}
 
         {/* Expiring Soon */}
         {expiringItems.length > 0 && (
