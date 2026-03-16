@@ -3,6 +3,7 @@ import { View, Text, TextInput, TouchableOpacity } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import Card from '../ui/Card';
 import Badge from '../ui/Badge';
+import { hapticSelection } from '../../lib/haptics';
 
 interface ScanResultItem {
   itemName: string;
@@ -28,7 +29,7 @@ export default function ScanResultCard({ item, index, onUpdate, onToggle }: Prop
   return (
     <Card className={`mb-3 ${!item.accepted ? 'opacity-50' : ''}`}>
       <View className="flex-row items-start">
-        <TouchableOpacity onPress={() => onToggle(index)} className="mr-3 mt-1">
+        <TouchableOpacity onPress={() => { hapticSelection(); onToggle(index); }} className="mr-3 mt-1">
           <Ionicons
             name={item.accepted ? 'checkbox' : 'square-outline'}
             size={24}

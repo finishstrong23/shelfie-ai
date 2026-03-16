@@ -65,6 +65,7 @@ model Scan {
   id        String         @id @default(cuid())
   userId    String
   user      User           @relation(fields: [userId], references: [id], onDelete: Cascade)
+  photoUrl  String?
   location  StorageLocation
   itemCount Int            @default(0)
   status    ScanStatus     @default(PROCESSING)

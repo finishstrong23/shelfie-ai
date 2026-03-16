@@ -2,6 +2,7 @@
 module.exports = {
   content: ['./app/**/*.{js,jsx,ts,tsx}', './components/**/*.{js,jsx,ts,tsx}'],
   presets: [require('nativewind/preset')],
+  darkMode: 'class',
   theme: {
     extend: {
       colors: {
@@ -17,6 +18,14 @@ module.exports = {
         danger: {
           DEFAULT: '#EF4444',
           light: '#FEE2E2',
+        },
+        surface: {
+          DEFAULT: '#FFFFFF',
+          dark: '#1F2937',
+        },
+        background: {
+          DEFAULT: '#F9FAFB',
+          dark: '#111827',
         },
       },
     },

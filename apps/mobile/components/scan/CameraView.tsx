@@ -3,6 +3,7 @@ import { View, TouchableOpacity, Text } from 'react-native';
 import { CameraView as ExpoCameraView, useCameraPermissions } from 'expo-camera';
 import { Ionicons } from '@expo/vector-icons';
 import Button from '../ui/Button';
+import { hapticHeavy } from '../../lib/haptics';
 
 interface Props {
   onCapture: (uri: string) => void;
@@ -30,6 +31,7 @@ export default function CameraView({ onCapture }: Props) {
 
   const handleCapture = async () => {
     if (!cameraRef.current) return;
+    hapticHeavy();
     const photo = await cameraRef.current.takePictureAsync({ quality: 0.8 });
     if (photo) onCapture(photo.uri);
   };

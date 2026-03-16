@@ -28,6 +28,54 @@ router.get('/', async (req: AuthenticatedRequest, res: Response): Promise<void> 
   }
 });
 
+router.get('/stats', async (req: AuthenticatedRequest, res: Response): Promise<void> => {
+  try {
+    const userId = req.userId!;
+    const now = new Date();
+    const weekAgo = new Date(now.getTime() - 7 * 86400000);
+    const monthAgo = new Date(now.getTime() - 30 * 86400000);
+
+    const [
+      totalActive,
+      consumedThisWeek,
+      wastedThisWeek,
+      consumedThisMonth,
+      wastedThisMonth,
+      totalScans,
+      totalMeals,
+    ] = await Promise.all([
+      prisma.inventoryItem.count({ where: { userId, consumedAt: null, wasted: false } }),
+      prisma.inventoryItem.count({ where: { userId, consumedAt: { gte: weekAgo }, wasted: false } }),
+      prisma.inventoryItem.count({ where: { userId, consumedAt: { gte: weekAgo }, wasted: true } }),
+      prisma.inventoryItem.count({ where: { userId, consumedAt: { gte: monthAgo }, wasted: false } }),
+      prisma.inventoryItem.count({ where: { userId, consumedAt: { gte: monthAgo }, wasted: true } }),
+      prisma.scan.count({ where: { userId } }),
+      prisma.mealLog.count({ where: { userId } }),
+    ]);
+
+    const weekTotal = consumedThisWeek + wastedThisWeek;
+    const savedPercentage = weekTotal > 0 ? Math.round((consumedThisWeek / weekTotal) * 100) : 100;
+
+    res.json({
+      totalActive,
+      weekly: {
+        consumed: consumedThisWeek,
+        wasted: wastedThisWeek,
+        savedPercentage,
+      },
+      monthly: {
+        consumed: consumedThisMonth,
+        wasted: wastedThisMonth,
+      },
+      totalScans,
+      totalMeals,
+    });
+  } catch (err) {
+    console.error('Stats error:', err);
+    res.status(500).json({ error: 'Internal server error', code: 'INTERNAL_ERROR' });
+  }
+});
+
 router.post('/', async (req: AuthenticatedRequest, res: Response): Promise<void> => {
   try {
     const data = addInventoryItemSchema.parse(req.body);

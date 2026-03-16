@@ -1,5 +1,5 @@
 import React from 'react';
-import { View, Text, ScrollView, TouchableOpacity } from 'react-native';
+import { View, Text, ScrollView, TouchableOpacity, Switch } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { router } from 'expo-router';
@@ -7,7 +7,11 @@ import Card from '../../components/ui/Card';
 import Badge from '../../components/ui/Badge';
 import Button from '../../components/ui/Button';
 import { useAuthStore } from '../../stores/authStore';
+import { useThemeStore } from '../../stores/themeStore';
+import { useThemeColors } from '../../lib/theme';
 import { useLogout } from '../../hooks/useAuth';
+import { useInventoryStats } from '../../hooks/useInventory';
+import { hapticSelection } from '../../lib/haptics';
 
 const DIETARY_OPTIONS = [
   'Vegetarian', 'Vegan', 'Gluten-Free', 'Dairy-Free',
@@ -17,6 +21,9 @@ const DIETARY_OPTIONS = [
 export default function ProfileScreen() {
   const user = useAuthStore((s) => s.user);
   const logout = useLogout();
+  const { isDark, toggle } = useThemeStore();
+  const { bg, text, textSecondary, border } = useThemeColors();
+  const { data: stats } = useInventoryStats();
 
   const handleLogout = () => {
     logout.mutate(undefined, {
@@ -25,9 +32,9 @@ export default function ProfileScreen() {
   };
 
   return (
-    <SafeAreaView className="flex-1 bg-gray-50">
+    <SafeAreaView className="flex-1" style={{ backgroundColor: bg }}>
       <ScrollView contentContainerStyle={{ padding: 16, paddingBottom: 100 }}>
-        <Text className="text-2xl font-bold text-gray-900 mb-4">Profile</Text>
+        <Text className="text-2xl font-bold mb-4" style={{ color: text }}>Profile</Text>
 
         {/* User info */}
         <Card className="mb-4">
@@ -36,16 +43,32 @@ export default function ProfileScreen() {
               <Ionicons name="person" size={28} color="#10B981" />
             </View>
             <View className="ml-4 flex-1">
-              <Text className="text-lg font-bold text-gray-900">{user?.name || 'User'}</Text>
-              <Text className="text-sm text-gray-500">{user?.email}</Text>
+              <Text className="text-lg font-bold" style={{ color: text }}>{user?.name || 'User'}</Text>
+              <Text className="text-sm" style={{ color: textSecondary }}>{user?.email}</Text>
             </View>
             <Badge label="FREE" variant="primary" size="md" />
           </View>
         </Card>
 
+        {/* Appearance */}
+        <Card className="mb-4">
+          <View className="flex-row items-center justify-between">
+            <View className="flex-row items-center">
+              <Ionicons name={isDark ? 'moon' : 'sunny'} size={22} color="#10B981" />
+              <Text className="text-base font-semibold ml-3" style={{ color: text }}>Dark Mode</Text>
+            </View>
+            <Switch
+              value={isDark}
+              onValueChange={() => { hapticSelection(); toggle(); }}
+              trackColor={{ false: '#D1D5DB', true: '#059669' }}
+              thumbColor="#FFFFFF"
+            />
+          </View>
+        </Card>
+
         {/* Dietary Preferences */}
         <Card className="mb-4">
-          <Text className="text-base font-semibold text-gray-900 mb-3">Dietary Preferences</Text>
+          <Text className="text-base font-semibold mb-3" style={{ color: text }}>Dietary Preferences</Text>
           <View className="flex-row flex-wrap gap-2">
             {DIETARY_OPTIONS.map((pref) => {
               const isSelected = user?.dietaryPrefs?.includes(pref);
@@ -53,10 +76,13 @@ export default function ProfileScreen() {
                 <TouchableOpacity
                   key={pref}
                   className={`px-3 py-1.5 rounded-full border ${
-                    isSelected ? 'bg-primary border-primary' : 'bg-white border-gray-200'
+                    isSelected ? 'bg-primary border-primary' : ''
                   }`}
+                  style={!isSelected ? { borderColor: border } : undefined}
                 >
-                  <Text className={`text-sm ${isSelected ? 'text-white font-medium' : 'text-gray-600'}`}>
+                  <Text className={`text-sm ${isSelected ? 'text-white font-medium' : ''}`}
+                    style={!isSelected ? { color: textSecondary } : undefined}
+                  >
                     {pref}
                   </Text>
                 </TouchableOpacity>
@@ -67,17 +93,17 @@ export default function ProfileScreen() {
 
         {/* App Stats */}
         <Card className="mb-4">
-          <Text className="text-base font-semibold text-gray-900 mb-3">Your Stats</Text>
+          <Text className="text-base font-semibold mb-3" style={{ color: text }}>Your Stats</Text>
           <View className="flex-row justify-between">
             {[
-              { label: 'Scans', value: '0', icon: 'camera' },
-              { label: 'Items Tracked', value: '0', icon: 'list' },
-              { label: 'Meals Cooked', value: '0', icon: 'restaurant' },
+              { label: 'Scans', value: String(stats?.totalScans ?? 0), icon: 'camera' },
+              { label: 'Items Tracked', value: String(stats?.totalActive ?? 0), icon: 'list' },
+              { label: 'Meals Cooked', value: String(stats?.totalMeals ?? 0), icon: 'restaurant' },
             ].map((stat) => (
               <View key={stat.label} className="items-center flex-1">
                 <Ionicons name={stat.icon as any} size={20} color="#10B981" />
-                <Text className="text-xl font-bold text-gray-900 mt-1">{stat.value}</Text>
-                <Text className="text-xs text-gray-500">{stat.label}</Text>
+                <Text className="text-xl font-bold mt-1" style={{ color: text }}>{stat.value}</Text>
+                <Text className="text-xs" style={{ color: textSecondary }}>{stat.label}</Text>
               </View>
             ))}
           </View>
@@ -85,7 +111,7 @@ export default function ProfileScreen() {
 
         <Button title="Sign Out" onPress={handleLogout} variant="outline" loading={logout.isPending} />
 
-        <Text className="text-center text-xs text-gray-400 mt-6">Shelfie AI v1.0.0</Text>
+        <Text className="text-center text-xs mt-6" style={{ color: textSecondary }}>Shelfie AI v1.0.0</Text>
       </ScrollView>
     </SafeAreaView>
   );

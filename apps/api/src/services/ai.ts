@@ -9,13 +9,20 @@ function stripMarkdownFencing(text: string): string {
 }
 
 export async function analyzePhoto(imagePath: string, location: string) {
-  // Compress image
+  // Compress image for API
   const compressedBuffer = await sharp(imagePath)
     .resize({ width: MAX_IMAGE_WIDTH, withoutEnlargement: true })
     .jpeg({ quality: IMAGE_QUALITY })
     .toBuffer();
 
   const base64Image = compressedBuffer.toString('base64');
+
+  // Save a smaller thumbnail for display
+  const thumbPath = imagePath.replace(/\.[^.]+$/, '_thumb.jpg');
+  await sharp(imagePath)
+    .resize({ width: 400, withoutEnlargement: true })
+    .jpeg({ quality: 60 })
+    .toFile(thumbPath);
 
   // Delete original file after compression
   fs.unlink(imagePath, () => {});
@@ -71,7 +78,7 @@ Be thorough — identify EVERY visible item, even partially obscured ones (lower
       const cleaned = stripMarkdownFencing(textBlock.text);
       const parsed = JSON.parse(cleaned);
       const validated = scanItemResponseSchema.parse(parsed);
-      return validated;
+      return { items: validated, thumbnailPath: thumbPath };
     } catch (err) {
       lastError = err as Error;
       console.error(`Scan attempt ${attempt + 1} failed:`, (err as Error).message);

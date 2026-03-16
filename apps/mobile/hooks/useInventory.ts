@@ -1,5 +1,7 @@
+import { useEffect } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import api from '../lib/api';
+import { scheduleExpirationReminders } from '../lib/notifications';
 import type { InventoryResponse, InventoryItem, StorageLocation, FoodCategory } from '../lib/types';
 
 export function useInventory(filters?: {
@@ -12,10 +14,35 @@ export function useInventory(filters?: {
   if (filters?.category) params.set('category', filters.category);
   if (filters?.expiringSoon) params.set('expiringSoon', 'true');
 
-  return useQuery<InventoryResponse>({
+  const query = useQuery<InventoryResponse>({
     queryKey: ['inventory', filters],
     queryFn: async () => {
       const { data } = await api.get(`/inventory?${params.toString()}`);
+      return data;
+    },
+  });
+
+  // Schedule expiration reminders when inventory loads (only for unfiltered list)
+  useEffect(() => {
+    if (!filters && query.data?.items) {
+      scheduleExpirationReminders(query.data.items);
+    }
+  }, [query.data?.items, filters]);
+
+  return query;
+}
+
+export function useInventoryStats() {
+  return useQuery<{
+    totalActive: number;
+    weekly: { consumed: number; wasted: number; savedPercentage: number };
+    monthly: { consumed: number; wasted: number };
+    totalScans: number;
+    totalMeals: number;
+  }>({
+    queryKey: ['inventory-stats'],
+    queryFn: async () => {
+      const { data } = await api.get('/inventory/stats');
       return data;
     },
   });

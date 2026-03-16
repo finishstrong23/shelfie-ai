@@ -14,7 +14,7 @@ export function startScanWorker() {
       const { scanId, imagePath, location } = job.data;
 
       try {
-        const items = await analyzePhoto(imagePath, location);
+        const { items, thumbnailPath } = await analyzePhoto(imagePath, location);
 
         // Create scan items and update scan status
         await prisma.$transaction(async (tx) => {
@@ -35,7 +35,11 @@ export function startScanWorker() {
 
           await tx.scan.update({
             where: { id: scanId },
-            data: { status: 'COMPLETED', itemCount: items.length },
+            data: {
+              status: 'COMPLETED',
+              itemCount: items.length,
+              photoUrl: `/uploads/${thumbnailPath.split('/').pop()}`,
+            },
           });
         });
       } catch (error) {

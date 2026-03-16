@@ -35,6 +35,7 @@ export async function getInventory(
 
   const items = await prisma.inventoryItem.findMany({
     where,
+    include: { scan: { select: { photoUrl: true } } },
     orderBy: [{ expiresAt: 'asc' }, { addedAt: 'desc' }],
   });
 

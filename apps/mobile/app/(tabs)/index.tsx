@@ -6,13 +6,17 @@ import { Ionicons } from '@expo/vector-icons';
 import Card from '../../components/ui/Card';
 import ExpirationBadge from '../../components/inventory/ExpirationBadge';
 import { DashboardSkeleton } from '../../components/ui/Skeleton';
-import { useInventory } from '../../hooks/useInventory';
+import WasteReport from '../../components/inventory/WasteReport';
+import { useInventory, useInventoryStats } from '../../hooks/useInventory';
 import { useAuthStore } from '../../stores/authStore';
+import { useThemeColors } from '../../lib/theme';
 
 export default function HomeScreen() {
   const user = useAuthStore((s) => s.user);
+  const { bg, text, textSecondary } = useThemeColors();
   const { data, isLoading, refetch, isRefetching } = useInventory();
   const { data: expiringData } = useInventory({ expiringSoon: true });
+  const { data: stats } = useInventoryStats();
 
   const counts = data?.counts || { fridge: 0, freezer: 0, pantry: 0, expiringSoon: 0 };
   const expiringItems = expiringData?.items || [];
@@ -24,17 +28,17 @@ export default function HomeScreen() {
   });
 
   return (
-    <SafeAreaView className="flex-1 bg-gray-50">
+    <SafeAreaView className="flex-1" style={{ backgroundColor: bg }}>
       <ScrollView
         contentContainerStyle={{ paddingBottom: 100 }}
         refreshControl={<RefreshControl refreshing={isRefetching} onRefresh={refetch} tintColor="#10B981" />}
       >
         {/* Header */}
         <View className="px-5 pt-4 pb-2">
-          <Text className="text-2xl font-bold text-gray-900">
+          <Text className="text-2xl font-bold" style={{ color: text }}>
             Hey{user?.name ? ` ${user.name}` : ''}
           </Text>
-          <Text className="text-sm text-gray-500 mt-0.5">{today}</Text>
+          <Text className="text-sm mt-0.5" style={{ color: textSecondary }}>{today}</Text>
         </View>
 
         {/* Skeleton Loading State */}
@@ -54,7 +58,7 @@ export default function HomeScreen() {
             >
               <Card className="items-center py-4">
                 <Ionicons name={stat.icon as any} size={24} color={stat.color} />
-                <Text className="text-2xl font-bold text-gray-900 mt-1">{stat.count}</Text>
+                <Text className="text-2xl font-bold mt-1" style={{ color: text }}>{stat.count}</Text>
                 <Text className="text-xs text-gray-500">{stat.label}</Text>
               </Card>
             </TouchableOpacity>
@@ -83,6 +87,13 @@ export default function HomeScreen() {
                 </Card>
               ))}
             </ScrollView>
+          </View>
+        )}
+
+        {/* Weekly Waste Report */}
+        {stats && (stats.weekly.consumed > 0 || stats.weekly.wasted > 0) && (
+          <View className="px-4 mt-4">
+            <WasteReport weekly={stats.weekly} monthly={stats.monthly} />
           </View>
         )}
 

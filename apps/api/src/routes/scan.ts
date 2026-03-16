@@ -65,6 +65,7 @@ router.get('/:id', async (req: AuthenticatedRequest, res: Response): Promise<voi
       status: scan.status,
       location: scan.location,
       itemCount: scan.itemCount,
+      photoUrl: scan.photoUrl,
       items: scan.items,
       createdAt: scan.createdAt.toISOString(),
     });

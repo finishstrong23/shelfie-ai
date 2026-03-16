@@ -47,6 +47,7 @@ export interface InventoryItem {
   expiresAt: string | null;
   consumedAt: string | null;
   wasted: boolean;
+  scan?: { photoUrl: string | null } | null;
 }
 
 export interface ScanItem {
